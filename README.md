@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<p align="center">
+  <img src="public/screenshots/home-hero.png" alt="Mimos & Personalizados AC" width="800" />
+</p>
 
-## Getting Started
+<h1 align="center">🌸 Mimos & Personalizados AC</h1>
 
-First, run the development server:
+<p align="center">
+  <b>Transformamos momentos especiais em lembranças inesquecíveis.</b>
+  <br/>
+  Loja virtual de presentes personalizados — canecas, cadernetas, lembrancinhas, kits e muito mais.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-16-black" alt="Next.js 16" />
+  <img src="https://img.shields.io/badge/TailwindCSS-v4-38bdf8" alt="TailwindCSS v4" />
+  <img src="https://img.shields.io/badge/FramerMotion-latest-ff69b4" alt="Framer Motion" />
+  <img src="https://img.shields.io/badge/TypeScript-5-blue" alt="TypeScript 5" />
+</p>
+
+---
+
+## ✨ Funcionalidades
+
+- 🛍️ **Catálogo de produtos** — Ofertas, Mimos e Datas Comemorativas com busca e filtros
+- 📅 **Agenda de datas especiais** — Contagem regressiva para Dia das Mães, Natal, Páscoa e mais
+- 💬 **WhatsApp integrado** — Compre diretamente pelo WhatsApp com mensagem personalizada
+- 🎨 **Design elegante** — Tema pastel, glassmorphism, efeitos de parallax e animações
+- 🌙 **Modo escuro** — Alterna entre claro/escuro com persistência
+- 📱 **100% responsivo** — Funciona perfeitamente em celular, tablet e desktop
+- 👤 **Painel Admin** — CRUD completo de produtos, controle de ofertas, relatórios
+- 🔔 **Notificações sociais** — Provas sociais falsas e contador de visitantes
+- 🌸 **Folhas e flores animadas** — Efeito visual no hero com canvas
+
+## 🛠️ Tecnologias
+
+| Tecnologia | Uso |
+|------------|-----|
+| Next.js 16 | Framework React com App Router |
+| TailwindCSS v4 | Estilização utilitária |
+| Framer Motion | Animações e transições |
+| Lucide React | Ícones leves e elegantes |
+| TypeScript | Tipagem segura |
+| localStorage | Persistência de dados (produtos, tema, preferências) |
+
+## 📸 Galeria
+
+| Hero | Produtos | Admin |
+|------|----------|-------|
+| ![Hero](public/screenshots/home-hero.png) | ![Produtos](public/screenshots/home-full.png) | ![Admin](public/screenshots/admin-dashboard.png) |
+
+## 🚀 Começando
 
 ```bash
+git clone https://github.com/luiz199/mimos-personalizados.git
+cd mimos-personalizados
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Acesse [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📦 Produtos Padrão
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Ao iniciar, o sistema carrega automaticamente 12 produtos de exemplo nos categorias:
+- **Mimos**: Canecas, Cadernetas, Lembrancinhas, Caixas, Topos de Bolo, Agendas, Kits
+- **Datas**: Dia das Mães, Páscoa, Natal, Casamento, Aniversário e mais
 
-## Learn More
+Todos os dados são salvos no `localStorage` do navegador.
 
-To learn more about Next.js, take a look at the following resources:
+## 🌐 Deploy
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+O deploy mais simples é pelo **Vercel**:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/luiz199/mimos-personalizados)
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+<p align="center">
+  Feito com 💖 por <a href="https://github.com/luiz199">luiz199</a>
+</p>

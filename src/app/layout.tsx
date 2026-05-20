@@ -8,7 +8,7 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 export const metadata: Metadata = {
   title: "Mimos & Personalizados AC",
   description: "Transformamos momentos especiais em lembranças inesquecíveis. Canecas, cadernetas, lembrancinhas e muito mais!",
-  icons: { icon: '/mimos-personalizados/favicon.ico' },
+  icons: { icon: '/favicon.ico' },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
