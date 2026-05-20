@@ -6,6 +6,7 @@ import {
   ShoppingBag, Tag, Sparkles, Package, ChevronDown, AlertCircle, GripVertical
 } from 'lucide-react';
 import { getProducts, addProduct, updateProduct, deleteProduct, setProducts } from '@/lib/products';
+import { fetchProducts, saveProduct, updateProductMongo, deleteProductMongo } from '@/lib/mongo';
 import type { Product } from '@/lib/products';
 
 const ADMIN_USER = 'admin';
@@ -56,8 +57,27 @@ export default function AdminPage() {
   const [filterCat, setFilterCat] = useState('all');
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState('');
+  const [showCloud, setShowCloud] = useState(false);
+  const [cloudUrl, setCloudUrl] = useState('');
+  const [cloudKey, setCloudKey] = useState('');
 
   const load = () => setProducts(getProducts());
+
+  const cloudConfig = () => ({
+    url: cloudUrl || localStorage.getItem('mimos-cloud-url') || '',
+    key: cloudKey || localStorage.getItem('mimos-cloud-key') || '',
+  });
+
+  const syncFromCloud = async () => {
+    const { url, key } = cloudConfig();
+    if (!url || !key) { setSuccessMsg('Configure a nuvem primeiro'); return; }
+    const cloud = await fetchProducts();
+    if (cloud && cloud.length > 0) {
+      setProducts(cloud);
+      localStorage.setItem('mimos-products', JSON.stringify(cloud));
+      setSuccessMsg('Produtos sincronizados da nuvem!');
+    }
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,6 +97,10 @@ export default function AdminPage() {
   useEffect(() => {
     if (localStorage.getItem('mimos-auth') === 'true') {
       setLoggedIn(true); load();
+      const savedUrl = localStorage.getItem('mimos-cloud-url');
+      const savedKey = localStorage.getItem('mimos-cloud-key');
+      if (savedUrl) setCloudUrl(savedUrl);
+      if (savedKey) setCloudKey(savedKey);
     }
   }, []);
 
@@ -298,7 +322,54 @@ export default function AdminPage() {
             }
           }} className="px-4 py-2 rounded-xl glass text-xs hover:bg-red-50 transition-all flex items-center gap-1.5 text-red-400"
           ><Trash2 size={13} /> Restaurar Padrão</button>
+          <button onClick={() => setShowCloud(!showCloud)}
+            className="px-4 py-2 rounded-xl glass text-xs hover:bg-white/40 transition-all flex items-center gap-1.5 text-text-secondary"
+          ><Package size={13} /> MongoDB Cloud</button>
         </div>
+
+        {showCloud && (
+          <div className="glass-strong rounded-2xl p-4 sm:p-6 mb-6">
+            <h3 className="text-sm font-bold text-text-primary mb-3">☁️ MongoDB Atlas Cloud</h3>
+            <div className="grid sm:grid-cols-2 gap-3 mb-3">
+              <div>
+                <label className="block text-[10px] font-medium text-text-secondary mb-1">Data API URL</label>
+                <input type="url" value={cloudUrl} onChange={e => { setCloudUrl(e.target.value); localStorage.setItem('mimos-cloud-url', e.target.value) }}
+                  className="w-full px-3 py-2 rounded-xl bg-white/60 border border-pink-200/40 text-xs outline-none"
+                  placeholder="https://ap-southeast-1.aws.data.mongodb.com/api/app/..." />
+              </div>
+              <div>
+                <label className="block text-[10px] font-medium text-text-secondary mb-1">API Key</label>
+                <input type="password" value={cloudKey} onChange={e => { setCloudKey(e.target.value); localStorage.setItem('mimos-cloud-key', e.target.value) }}
+                  className="w-full px-3 py-2 rounded-xl bg-white/60 border border-pink-200/40 text-xs outline-none"
+                  placeholder="MongoDB Data API Key" />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={async () => {
+                const { url, key } = { url: cloudUrl || localStorage.getItem('mimos-cloud-url'), key: cloudKey || localStorage.getItem('mimos-cloud-key') };
+                if (!url || !key) { setSuccessMsg('Configure URL e API Key primeiro'); return; }
+                const cloud = await fetchProducts();
+                if (cloud && cloud.length > 0) {
+                  setProducts(cloud);
+                  localStorage.setItem('mimos-products', JSON.stringify(cloud));
+                  load();
+                  setSuccessMsg('Produtos baixados da nuvem!');
+                } else {
+                  setSuccessMsg('Nuvem vazia ou erro de conexão');
+                }
+              }} className="px-4 py-2 rounded-xl glass text-xs hover:bg-blue-50 transition-all flex items-center gap-1.5 text-blue-600"
+              ><Package size={13} /> Baixar da Nuvem</button>
+              <button onClick={async () => {
+                const { url, key } = { url: cloudUrl || localStorage.getItem('mimos-cloud-url'), key: cloudKey || localStorage.getItem('mimos-cloud-key') };
+                if (!url || !key) { setSuccessMsg('Configure URL e API Key primeiro'); return; }
+                const all = getProducts();
+                for (const p of all) await saveProduct(p);
+                setSuccessMsg(`${all.length} produtos enviados para nuvem!`);
+              }} className="px-4 py-2 rounded-xl glass text-xs hover:bg-green-50 transition-all flex items-center gap-1.5 text-green-600"
+              ><Save size={13} /> Enviar para Nuvem</button>
+            </div>
+          </div>
+        )}
 
         <div className="grid gap-4">
           {filtered.map((p, i) => (
