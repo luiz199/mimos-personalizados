@@ -75,6 +75,16 @@ const DEFAULT_PRODUCTS: Product[] = [
     description: 'Conjunto festivo com bandeirinhas decoradas, chapéu de palha e lembrancinhas personalizadas para sua festa junina.',
     price: 49.90, image: '', category: 'datas', subcategory: 'festa-junina', createdAt: Date.now(),
   },
+  {
+    id: '13', name: 'Super Combo Mimos Exclusivos',
+    description: 'Pacote especial com 3 produtos personalizados: caneca + caderneta + caneta com 20% de desconto. O presente completo que cabe no bolso.',
+    price: 89.90, oldPrice: 119.70, image: '', category: 'ofertas', subcategory: 'kits-promocionais', isOffer: true, createdAt: Date.now(),
+  },
+  {
+    id: '14', name: 'Mini Caneca Surpresa',
+    description: 'Caneca 200ml sortida com estampas exclusivas por apenas R$19,90. Estoque limitado — aproveite enquanto durar!',
+    price: 19.90, oldPrice: 39.90, image: '', category: 'ofertas', subcategory: 'queima-estoque', isOffer: true, createdAt: Date.now(),
+  },
 ];
 
 export function getProducts(): Product[] {
@@ -112,6 +122,7 @@ export function deleteProduct(id: string) {
 
 export function getCategories(): string[] {
   const cats = new Set(getProducts().map(p => p.category));
+  for (const c of ['mimos', 'datas', 'ofertas']) cats.add(c);
   return Array.from(cats);
 }
 

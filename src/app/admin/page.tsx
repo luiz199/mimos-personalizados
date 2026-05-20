@@ -14,11 +14,13 @@ const ADMIN_PASS = '2025';
 const categories = [
   { id: 'mimos', label: 'Mimos', emoji: '🎀' },
   { id: 'datas', label: 'Datas Comemorativas', emoji: '🎊' },
+  { id: 'ofertas', label: 'Ofertas', emoji: '🔥' },
 ];
 
 const subcategoryOptions: Record<string, string[]> = {
   mimos: ['canecas', 'cadernetas', 'lembrancinhas', 'caixas', 'topos-bolo', 'agendas', 'kits'],
   datas: ['dia-das-maes', 'dia-dos-pais', 'pascoa', 'natal', 'ano-novo', 'dia-das-criancas', 'festa-junina', 'cha-revelacao', 'casamento', 'aniversario'],
+  ofertas: ['promocoes', 'kits-promocionais', 'lancamentos', 'queima-estoque'],
 };
 
 const subcatLabels: Record<string, string> = {
@@ -28,6 +30,8 @@ const subcatLabels: Record<string, string> = {
   'natal': 'Natal', 'ano-novo': 'Ano Novo', 'dia-das-criancas': 'Dia das Crianças',
   'festa-junina': 'Festa Junina', 'cha-revelacao': 'Chá Revelação', 'casamento': 'Casamento',
   'aniversario': 'Aniversário',
+  'promocoes': 'Promoções', 'kits-promocionais': 'Kits Promocionais', 'lancamentos': 'Lançamentos',
+  'queima-estoque': 'Queima de Estoque',
 };
 
 interface ProductForm {
@@ -231,6 +235,7 @@ export default function AdminPage() {
             { label: 'Em Oferta', value: products.filter(p => p.isOffer).length, color: '#f472b6' },
             { label: 'Mimos', value: products.filter(p => p.category === 'mimos').length, color: '#7dd3fc' },
             { label: 'Datas', value: products.filter(p => p.category === 'datas').length, color: '#a78bfa' },
+            { label: 'Ofertas', value: products.filter(p => p.category === 'ofertas').length, color: '#fb923c' },
           ].map(stat => (
             <div key={stat.label} className="glass rounded-xl p-4 text-center">
               <div className="text-2xl font-light text-[#111]">{stat.value}</div>
