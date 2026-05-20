@@ -40,7 +40,7 @@ export default function Footer() {
                 { href: '#mimos', label: 'Mimos' },
                 { href: '#datas', label: 'Datas Comemorativas' },
                 { href: '#sobre', label: 'Sobre Nós' },
-                { href: '/mimos-personalizados/admin', label: 'Admin' },
+                { href: '/mimos-personalizados/admin/', label: 'Admin' },
               ].map(link => (
                 <a key={link.href} href={link.href}
                   className="block text-sm text-text-secondary/70 hover:text-pink-500 transition-colors"

@@ -9,7 +9,7 @@ const navLinks = [
   { href: '#datas', label: 'Datas' },
   { href: '#sobre', label: 'Sobre' },
   { href: '#contato', label: 'Contato' },
-  { href: '/mimos-personalizados/admin', label: 'Admin' },
+  { href: '/mimos-personalizados/admin/', label: 'Admin' },
 ];
 
 export default function Header() {
