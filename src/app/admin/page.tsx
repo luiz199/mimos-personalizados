@@ -5,7 +5,7 @@ import {
   LogIn, LogOut, Plus, Edit3, Trash2, Save, X, ImageIcon, Copy,
   ShoppingBag, Tag, Sparkles, Package, ChevronDown, AlertCircle, GripVertical
 } from 'lucide-react';
-import { getProducts, addProduct, updateProduct, deleteProduct } from '@/lib/products';
+import { getProducts, addProduct, updateProduct, deleteProduct, setProducts } from '@/lib/products';
 import type { Product } from '@/lib/products';
 
 const ADMIN_USER = 'admin';
@@ -259,6 +259,45 @@ export default function AdminPage() {
               >{c.emoji} {c.label} ({products.filter(p => p.category === c.id).length})</button>
             ))}
           </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-6">
+          <button onClick={() => {
+            const blob = new Blob([JSON.stringify(products, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'mimos-produtos-backup.json'; a.click();
+            URL.revokeObjectURL(url);
+          }} className="px-4 py-2 rounded-xl glass text-xs hover:bg-white/40 transition-all flex items-center gap-1.5 text-text-secondary"
+          ><Save size={13} /> Exportar Backup</button>
+          <label className="px-4 py-2 rounded-xl glass text-xs hover:bg-white/40 transition-all flex items-center gap-1.5 text-text-secondary cursor-pointer">
+            <Package size={13} /> Importar Backup
+            <input type="file" accept=".json" className="hidden" onChange={e => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              const reader = new FileReader();
+              reader.onload = ev => {
+                try {
+                  const data = JSON.parse(ev.target?.result as string);
+                  if (Array.isArray(data)) {
+                    setProducts(data);
+                    load();
+                    setSuccessMsg('Backup importado com sucesso!');
+                  }
+                } catch { setSuccessMsg('Erro ao importar backup'); }
+              };
+              reader.readAsText(file);
+              e.target.value = '';
+            }} />
+          </label>
+          <button onClick={() => {
+            if (confirm('Tem certeza? Todos os produtos serão substituídos pelos padrões.')) {
+              localStorage.removeItem('mimos-products');
+              load();
+              setSuccessMsg('Produtos restaurados para o padrão!');
+            }
+          }} className="px-4 py-2 rounded-xl glass text-xs hover:bg-red-50 transition-all flex items-center gap-1.5 text-red-400"
+          ><Trash2 size={13} /> Restaurar Padrão</button>
         </div>
 
         <div className="grid gap-4">
