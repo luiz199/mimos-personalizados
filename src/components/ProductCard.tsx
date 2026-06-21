@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingCart, ShoppingBag, Sparkles } from 'lucide-react';
 import type { Product } from '@/lib/products';
@@ -25,8 +26,9 @@ const categoryLabels: Record<string, string> = {
 export default function ProductCard({ product, index = 0, showOffer, onView }: Props) {
   const p = product;
   const { add } = useCart();
+  const [imgError, setImgError] = useState(false);
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  const isFullUrl = p.image && (p.image.startsWith('http') || p.image.startsWith('data:image/jpeg') || p.image.startsWith('data:image/png'));
+  const isFullUrl = p.image && (p.image.startsWith('http') || p.image.startsWith('data:image/jpeg') || p.image.startsWith('data:image/png') || p.image.startsWith('/api/'));
   const imgUrl = p.image ? (isFullUrl ? p.image : `${origin}${p.image}`) : '';
   const productUrl = `${typeof window !== 'undefined' ? window.location.origin : 'https://mimos-personalizados-tan.vercel.app'}/?p=${p.id}`;
   const [c1, c2, c3] = getPlaceholderColors(p.subcategory);
@@ -50,8 +52,8 @@ export default function ProductCard({ product, index = 0, showOffer, onView }: P
         </div>
       )}
       <div className="relative h-48 sm:h-56 flex items-center justify-center overflow-hidden">
-        {hasRealImage ? (
-          <img src={imgUrl} alt={p.name}
+        {(hasRealImage && !imgError) ? (
+          <img src={imgUrl} alt={p.name} onError={() => setImgError(true)}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
           />
         ) : (
