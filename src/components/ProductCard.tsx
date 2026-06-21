@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingCart, Sparkles } from 'lucide-react';
 import type { Product } from '@/lib/products';
@@ -23,10 +24,14 @@ const categoryLabels: Record<string, string> = {
 
 export default function ProductCard({ product, index = 0, showOffer, onView }: Props) {
   const p = product;
+  const [imgError, setImgError] = useState(false);
   const productUrl = `https://mimos-personalizados-tan.vercel.app/?p=${p.id}`;
-  const hasImage = !!p.image && (p.image.startsWith('http') || p.image.startsWith('data:'));
   const [c1, c2, c3] = getPlaceholderColors(p.subcategory);
   const initial = p.name.charAt(0).toUpperCase();
+
+  const isImageUrl = !!p.image && (p.image.startsWith('http') || p.image.startsWith('data:') || p.image.startsWith('/api/'));
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://mimos-personalizados-tan.vercel.app';
+  const imgSrc = p.image && isImageUrl ? (p.image.startsWith('/') ? `${origin}${p.image}` : p.image) : '';
 
   return (
     <motion.div
@@ -45,8 +50,10 @@ export default function ProductCard({ product, index = 0, showOffer, onView }: P
         </div>
       )}
       <div className="relative h-48 sm:h-56 flex items-center justify-center overflow-hidden">
-        {hasImage ? (
-          <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+        {(isImageUrl && imgSrc && !imgError) ? (
+          <img src={imgSrc} alt={p.name} onError={() => setImgError(true)}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+          />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center transition-transform duration-700 group-hover:scale-110"
             style={{ background: `linear-gradient(135deg, ${c1}, ${c2}, ${c3})` }}
