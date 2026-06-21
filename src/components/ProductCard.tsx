@@ -28,6 +28,7 @@ export default function ProductCard({ product, index = 0, showOffer, onView }: P
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const isFullUrl = p.image && (p.image.startsWith('http') || p.image.startsWith('data:image/jpeg') || p.image.startsWith('data:image/png'));
   const imgUrl = p.image ? (isFullUrl ? p.image : `${origin}${p.image}`) : '';
+  const productUrl = `${typeof window !== 'undefined' ? window.location.origin : 'https://mimos-personalizados-tan.vercel.app'}/?p=${p.id}`;
   const [c1, c2, c3] = getPlaceholderColors(p.subcategory);
   const initial = p.name.charAt(0).toUpperCase();
   const hasRealImage = !!p.image && isFullUrl;
@@ -90,7 +91,7 @@ export default function ProductCard({ product, index = 0, showOffer, onView }: P
             <ShoppingBag size={15} />
             Carrinho
           </button>
-          <button onClick={e => { e.stopPropagation(); openWhatsapp(p.name, p.price, imgUrl); }}
+          <button onClick={e => { e.stopPropagation(); openWhatsapp(p.name, p.price, productUrl, imgUrl); }}
             className="flex-1 btn-primary justify-center text-sm py-2.5"
           >
             <ShoppingCart size={15} />

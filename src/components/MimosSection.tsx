@@ -1,17 +1,11 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Gift, Search, X } from 'lucide-react';
-
-const products = [
-  { id: '1', name: 'Caneca Floral Delicada', desc: 'Caneca de porcelana 300ml adornada com estampa floral em tons pastéis.', price: 49.90, old: 69.90, sub: 'canecas' },
-  { id: '2', name: 'Caderneta Artesanal com Caneta', desc: 'Caderneta revestida em tecido com nome bordado, acompanhada de caneta exclusiva.', price: 39.90, old: 55.00, sub: 'cadernetas' },
-  { id: '3', name: 'Lembranças de Casamento Premium', desc: 'Conjunto de 50 lembrancinhas personalizadas com embalagem individual em organza.', price: 189.90, sub: 'lembrancinhas' },
-  { id: '4', name: 'Baú de Memórias Personalizado', desc: 'Caixa em MDF revestida com nome e data gravados a laser. Dimensões 25x15x8cm.', price: 79.90, sub: 'caixas' },
-  { id: '5', name: 'Topo de Bolo Sonho de Amor', desc: 'Topo de bolo em acrílico cristal com nomes dos noivos e data.', price: 34.90, sub: 'topos-bolo' },
-  { id: '6', name: 'Agenda dos Sonhos 2026', desc: 'Agenda anual com capa dura revestida em tecido aveludado, nome personalizado.', price: 59.90, old: 79.90, sub: 'agendas' },
-  { id: '7', name: 'Kit Universitário Encanto', desc: 'Conjunto completo para formatura: caneca porcelana, caderneta, caneta e chaveiro personalizados.', price: 99.90, sub: 'kits' },
-];
+import { getProducts, onSync } from '@/lib/products';
+import ProductCard from './ProductCard';
+import ProductModal from './ProductModal';
+import type { Product } from '@/lib/products';
 
 const subLabels: Record<string, string> = {
   canecas: 'Canecas', cadernetas: 'Cadernetas', lembrancinhas: 'Lembrancinhas',
@@ -19,13 +13,18 @@ const subLabels: Record<string, string> = {
 };
 
 export default function MimosSection() {
+  const [products, setProducts] = useState<Product[]>(() => getProducts().filter(p => p.category === 'mimos'));
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
+  const [modal, setModal] = useState<Product | null>(null);
+
+  useEffect(() => onSync(() => setProducts(getProducts().filter(p => p.category === 'mimos'))), []);
+
   const filtered = products.filter(p => {
-    if (filter !== 'all' && p.sub !== filter) return false;
+    if (filter !== 'all' && p.subcategory !== filter) return false;
     if (search) {
       const q = search.toLowerCase();
-      if (!p.name.toLowerCase().includes(q) && !p.desc.toLowerCase().includes(q)) return false;
+      if (!p.name.toLowerCase().includes(q) && !p.description.toLowerCase().includes(q)) return false;
     }
     return true;
   });
@@ -71,25 +70,7 @@ export default function MimosSection() {
 
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
           {filtered.map((p, i) => (
-            <motion.div key={p.id}
-              initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-50px' }}
-              transition={{ duration: 0.5, delay: i * 0.08 }}
-              className="card-hover group relative glass rounded-2xl overflow-hidden flex flex-col"
-            >
-              <div className="relative h-48 sm:h-56 flex items-center justify-center overflow-hidden bg-gradient-to-br from-pink-100 via-pink-50 to-blue-100">
-                <span className="text-6xl sm:text-7xl font-light text-white/70 select-none group-hover:scale-110 transition-transform duration-700">{p.name.charAt(0)}</span>
-              </div>
-              <div className="p-4 sm:p-5 flex flex-col flex-1">
-                {p.sub && <span className="tag tag-pink mb-2 self-start text-[10px]">{subLabels[p.sub] || p.sub}</span>}
-                <h3 className="font-medium text-sm sm:text-base mb-1.5 text-text-primary leading-tight">{p.name}</h3>
-                <p className="text-xs sm:text-sm text-text-secondary/70 mb-3 line-clamp-2 leading-relaxed flex-1">{p.desc}</p>
-                <div className="flex items-baseline gap-2 mb-4">
-                  {p.old && <span className="product-old-price">R$ {p.old.toFixed(2).replace('.', ',')}</span>}
-                  <span className="text-base sm:text-lg font-light text-[#111]">R$ {p.price.toFixed(2).replace('.', ',')}</span>
-                </div>
-              </div>
-            </motion.div>
+            <ProductCard key={p.id} product={p} index={i} onView={setModal} />
           ))}
         </div>
 
@@ -100,6 +81,7 @@ export default function MimosSection() {
           </div>
         )}
       </div>
+      <ProductModal product={modal} onClose={() => setModal(null)} />
     </section>
   );
 }
