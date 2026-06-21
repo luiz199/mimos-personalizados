@@ -3,12 +3,10 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LogIn, LogOut, Plus, Edit3, Trash2, Save, X, ImageIcon, Copy,
-  ShoppingBag, Tag, Sparkles, Package, ChevronDown, AlertCircle, GripVertical, Cloud, Download,
-  Percent, Calendar, CheckCircle, Clock
+  ShoppingBag, Tag, Sparkles, Package, ChevronDown, AlertCircle, GripVertical, Cloud, Download
 } from 'lucide-react';
-import { getProducts, addProduct, updateProduct, deleteProduct, setProducts as setLibProducts, syncFromApi } from '@/lib/products';
+import { getProducts, addProduct, updateProduct, deleteProduct, setProducts } from '@/lib/products';
 import type { Product } from '@/lib/products';
-import { getPlaceholderColors } from '@/lib/placeholders';
 
 const ADMIN_USER = 'admin';
 const ADMIN_PASS = '2025';
@@ -60,55 +58,16 @@ export default function AdminPage() {
   const [successMsg, setSuccessMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [apiMode, setApiMode] = useState(false);
-  const [adminTab, setAdminTab] = useState<'produtos' | 'cupons'>('produtos');
-
-  const [coupons, setCoupons] = useState<any[]>([]);
-  const [couponForm, setCouponForm] = useState({ code: '', discount: '10', usesLeft: '', expiresDays: '', minValue: '' });
-  const [couponSuccess, setCouponSuccess] = useState('');
-
-  const loadCoupons = async () => {
-    try {
-      const res = await fetch('/api/coupons');
-      if (res.ok) setCoupons(await res.json());
-    } catch {}
-  };
-
-  const handleCreateCoupon = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const body: Record<string, any> = {
-        code: couponForm.code.toUpperCase(),
-        discount: parseInt(couponForm.discount),
-        active: true,
-        createdAt: Date.now(),
-      };
-      if (couponForm.usesLeft) body.usesLeft = parseInt(couponForm.usesLeft);
-      if (couponForm.expiresDays) body.expiresAt = Date.now() + parseInt(couponForm.expiresDays) * 86400000;
-      if (couponForm.minValue) body.minValue = parseFloat(couponForm.minValue);
-      await fetch('/api/coupons', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      setCouponForm({ code: '', discount: '10', usesLeft: '', expiresDays: '', minValue: '' });
-      setCouponSuccess(`Cupom ${body.code} criado com sucesso!`);
-      await loadCoupons();
-    } catch {
-      setCouponSuccess('Erro ao criar cupom');
-    }
-    setTimeout(() => setCouponSuccess(''), 3000);
-  };
-
-  const handleDeleteCoupon = async (id: string) => {
-    await fetch('/api/coupons', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
-    await loadCoupons();
-  };
 
   const api = {
     async load() {
-      await syncFromApi();
       try {
         const res = await fetch('/api/products');
         if (!res.ok) throw new Error('API not available');
         const data = await res.json();
         if (Array.isArray(data) && data.length) {
           setProducts(data);
+          localStorage.setItem('mimos-products', JSON.stringify(data));
           setApiMode(true);
           return;
         }
@@ -145,7 +104,7 @@ export default function AdminPage() {
     },
   };
 
-  const load = async () => { await api.load(); };
+  const load = () => api.load();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -181,7 +140,7 @@ export default function AdminPage() {
     setShowForm(true);
   };
 
-  const handleSave = async (e: React.FormEvent) => {
+  const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     const data = {
       name: form.name, description: form.description,
@@ -192,36 +151,35 @@ export default function AdminPage() {
     };
     if (editId) {
       updateProduct(editId, data);
-      await api.update(editId, data);
+      api.update(editId, data);
       setSuccessMsg('Produto atualizado com sucesso!');
     } else {
       const p = addProduct(data);
-      await api.save(p);
+      api.save(p);
       setSuccessMsg('Produto adicionado com sucesso!');
     }
-    await load();
+    load();
     setShowForm(false);
     setEditId(null);
     setTimeout(() => setSuccessMsg(''), 3000);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     deleteProduct(id);
-    await api.remove(id);
-    await load();
+    api.remove(id);
+    load();
     setConfirmDelete(null);
     setSuccessMsg('Produto excluído com sucesso!');
     setTimeout(() => setSuccessMsg(''), 3000);
   };
 
-  const handleDuplicate = async (p: Product) => {
-    const novo = addProduct({
+  const handleDuplicate = (p: Product) => {
+    addProduct({
       name: p.name + ' (cópia)', description: p.description, price: p.price,
       oldPrice: p.oldPrice, image: p.image, category: p.category,
       subcategory: p.subcategory || '', isOffer: p.isOffer,
     });
-    await api.save(novo);
-    await load();
+    load();
     setSuccessMsg('Produto duplicado com sucesso!');
     setTimeout(() => setSuccessMsg(''), 3000);
   };
@@ -308,16 +266,13 @@ export default function AdminPage() {
             </div>
             <div>
               <h1 className="text-lg font-normal text-[#111] tracking-[-0.01em]">Painel Administrativo</h1>
-              <p className="text-xs text-text-secondary/60">Gerencie seus produtos e cupons</p>
+              <p className="text-xs text-text-secondary/60">Gerencie seus produtos</p>
             </div>
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto">
-<button onClick={openNew}
-  className="btn-primary flex-1 sm:flex-initial justify-center text-sm py-2.5 px-5 btn-ripple"
-  style={{ display: adminTab === 'produtos' ? 'flex' : 'none' }}
->
-  <Plus size={16} /> Novo Produto
-</button>
+            <button onClick={openNew} className="btn-primary flex-1 sm:flex-initial justify-center text-sm py-2.5 px-5 btn-ripple">
+              <Plus size={16} /> Novo Produto
+            </button>
             <button onClick={handleLogout}
               className="p-2.5 rounded-xl glass text-text-secondary hover:text-red-500 transition-colors"
               title="Sair"
@@ -325,20 +280,7 @@ export default function AdminPage() {
           </div>
         </div>
 
-        <div className="flex gap-2 mb-6">
-          <button onClick={() => setAdminTab('produtos')}
-            className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
-              adminTab === 'produtos' ? 'bg-pink-500 text-white shadow-lg shadow-pink-200' : 'glass hover:bg-white/40 text-text-secondary'
-            }`}
-          ><ShoppingBag size={15} /> Produtos</button>
-          <button onClick={() => { setAdminTab('cupons'); loadCoupons(); }}
-            className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
-              adminTab === 'cupons' ? 'bg-pink-500 text-white shadow-lg shadow-pink-200' : 'glass hover:bg-white/40 text-text-secondary'
-            }`}
-          ><Percent size={15} /> Cupons</button>
-        </div>
-
-<div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6" style={{ display: adminTab === 'produtos' ? 'grid' : 'none' }}>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           {[
             { label: 'Total de Produtos', value: products.length, color: '#111' },
             { label: 'Em Oferta', value: products.filter(p => p.isOffer).length, color: '#f472b6' },
@@ -353,7 +295,7 @@ export default function AdminPage() {
           ))}
         </div>
 
-        <div className="glass-strong rounded-2xl p-4 sm:p-6 mb-6" style={{ display: adminTab === 'produtos' ? 'block' : 'none' }}>
+        <div className="glass-strong rounded-2xl p-4 sm:p-6 mb-6">
           <div className="flex flex-wrap gap-2">
             <button onClick={() => setFilterCat('all')}
               className={`px-4 py-2 rounded-full text-xs font-normal transition-all ${
@@ -389,9 +331,8 @@ export default function AdminPage() {
                 try {
                   const data = JSON.parse(ev.target?.result as string);
                   if (Array.isArray(data)) {
-                    setLibProducts(data);
                     setProducts(data);
-                    setApiMode(false);
+                    load();
                     setSuccessMsg('Backup importado com sucesso!');
                   }
                 } catch { setSuccessMsg('Erro ao importar backup'); }
@@ -400,25 +341,14 @@ export default function AdminPage() {
               e.target.value = '';
             }} />
           </label>
-          <button onClick={async () => {
+          <button onClick={() => {
             if (confirm('Tem certeza? Todos os produtos serão substituídos pelos padrões.')) {
               localStorage.removeItem('mimos-products');
-              await load();
+              load();
               setSuccessMsg('Produtos restaurados para o padrão!');
             }
           }} className="px-4 py-2 rounded-xl glass text-xs hover:bg-red-50 transition-all flex items-center gap-1.5 text-red-400"
           ><Trash2 size={13} /> Restaurar Padrão</button>
-          <button onClick={async () => {
-            if (confirm('TEM CERTEZA? Isso vai apagar TODOS os produtos do site e do banco de dados!')) {
-              localStorage.setItem('mimos-products', '[]');
-              setProducts([]);
-              setLibProducts([]);
-              await fetch('/api/products', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ all: true }) });
-              window.dispatchEvent(new Event('mimos-synced'));
-              setSuccessMsg('Todos os produtos foram apagados!');
-            }
-          }} className="px-4 py-2 rounded-xl glass text-xs hover:bg-red-100 transition-all flex items-center gap-1.5 text-red-600 font-semibold"
-          ><Trash2 size={13} /> Apagar Tudo</button>
           <span className={`px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 ${apiMode ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
             <Cloud size={13} /> {apiMode ? 'Cloud ON' : 'Cloud OFF'}
           </span>
@@ -436,21 +366,8 @@ export default function AdminPage() {
               onDragEnd={handleDragEnd}
               className={`glass rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row items-start gap-4 cursor-grab active:cursor-grabbing ${dragIdx === i ? 'opacity-50 ring-2 ring-pink-200' : ''}`}
             >
-              <div className="w-16 h-16 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden">
-                {p.image && (p.image.startsWith('http') || p.image.startsWith('data:')) ? (
-                  <img src={p.image} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  (() => {
-                    const [c1, c2, c3] = getPlaceholderColors(p.subcategory);
-                    return (
-                      <div className="w-full h-full flex items-center justify-center"
-                        style={{ background: `linear-gradient(135deg, ${c1}, ${c2}, ${c3})` }}
-                      >
-                        <span className="text-lg font-bold text-white/70">{p.name.charAt(0)}</span>
-                      </div>
-                    );
-                  })()
-                )}
+              <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-pastel-pink to-pastel-blue flex-shrink-0 flex items-center justify-center overflow-hidden">
+                {p.image ? <img src={p.image} alt="" className="w-full h-full object-cover" /> : <ImageIcon size={24} className="text-pink-300/60" />}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -494,108 +411,12 @@ export default function AdminPage() {
           )}
         </div>
 
-        <div className="mt-4 text-center" style={{ display: adminTab === 'produtos' ? 'block' : 'none' }}>
+        <div className="mt-4 text-center">
           <a href="/" className="text-xs text-text-secondary/50 hover:text-pink-500 transition-colors">
             ← Voltar ao site
           </a>
         </div>
       </div>
-
-      <div style={{ display: adminTab === 'cupons' ? 'block' : 'none' }}>
-          <div className="glass-strong rounded-2xl p-4 sm:p-6 mb-6">
-            <h2 className="text-sm font-medium text-text-primary mb-4 flex items-center gap-2">
-              <Percent size={16} className="text-pink-500" /> Criar Cupom
-            </h2>
-            {couponSuccess && (
-              <p className="text-xs text-green-600 mb-3 flex items-center gap-1">
-                <CheckCircle size={12} /> {couponSuccess}
-              </p>
-            )}
-            <form onSubmit={handleCreateCoupon} className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-              <div>
-                <label className="block text-[10px] font-medium text-text-secondary mb-1">Código</label>
-                <input type="text" required value={couponForm.code}
-                  onChange={e => setCouponForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
-                  placeholder="EX: PROMO10"
-                  className="w-full px-3 py-2 rounded-xl bg-white/60 border border-pink-200/40 focus:border-pink-400 outline-none text-xs" />
-              </div>
-              <div>
-                <label className="block text-[10px] font-medium text-text-secondary mb-1">Desconto (%)</label>
-                <input type="number" required min="1" max="100" value={couponForm.discount}
-                  onChange={e => setCouponForm(f => ({ ...f, discount: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-xl bg-white/60 border border-pink-200/40 focus:border-pink-400 outline-none text-xs" />
-              </div>
-              <div>
-                <label className="block text-[10px] font-medium text-text-secondary mb-1">Usos (opcional)</label>
-                <input type="number" value={couponForm.usesLeft}
-                  onChange={e => setCouponForm(f => ({ ...f, usesLeft: e.target.value }))}
-                  placeholder="Ilimitado"
-                  className="w-full px-3 py-2 rounded-xl bg-white/60 border border-pink-200/40 focus:border-pink-400 outline-none text-xs" />
-              </div>
-              <div>
-                <label className="block text-[10px] font-medium text-text-secondary mb-1">Validade (dias)</label>
-                <input type="number" value={couponForm.expiresDays}
-                  onChange={e => setCouponForm(f => ({ ...f, expiresDays: e.target.value }))}
-                  placeholder="Sem prazo"
-                  className="w-full px-3 py-2 rounded-xl bg-white/60 border border-pink-200/40 focus:border-pink-400 outline-none text-xs" />
-              </div>
-              <div className="flex items-end">
-                <button type="submit" className="w-full px-3 py-2 rounded-xl bg-pink-500 text-white text-xs font-medium hover:bg-pink-600 transition-all flex items-center justify-center gap-1">
-                  <Plus size={12} /> Criar
-                </button>
-              </div>
-            </form>
-          </div>
-
-          <div className="glass-strong rounded-2xl p-4 sm:p-6">
-            <h2 className="text-sm font-medium text-text-primary mb-4 flex items-center gap-2">
-              <Tag size={16} className="text-pink-500" /> Cupons ({coupons.length})
-            </h2>
-            {coupons.length === 0 ? (
-              <div className="text-center py-10">
-                <Percent size={40} className="mx-auto text-pink-300/50 mb-2" />
-                <p className="text-xs text-text-secondary/60">Nenhum cupom criado</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {coupons.map((c: any) => (
-                  <div key={c._id} className="flex items-center justify-between glass rounded-xl p-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-green-200 to-green-100 flex items-center justify-center">
-                        <Percent size={14} className="text-green-600" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-mono font-bold text-green-700">{c.code}</span>
-                          <span className="text-xs text-pink-500 font-medium">{c.discount}% OFF</span>
-                        </div>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className={`text-[10px] flex items-center gap-0.5 ${c.active !== false ? 'text-green-500' : 'text-red-400'}`}>
-                            {c.active !== false ? <CheckCircle size={9} /> : <X size={9} />}
-                            {c.active !== false ? 'Ativo' : 'Inativo'}
-                          </span>
-                          {c.usesLeft !== undefined && (
-                            <span className="text-[10px] text-text-secondary/50 flex items-center gap-0.5">
-                              <Package size={9} /> {c.usesLeft} usos
-                            </span>
-                          )}
-                          {c.expiresAt && (
-                            <span className="text-[10px] text-text-secondary/50 flex items-center gap-0.5">
-                              <Clock size={9} /> {new Date(c.expiresAt).toLocaleDateString('pt-BR')}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <button onClick={() => handleDeleteCoupon(c._id)}
-                      className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 transition-colors"
-                    ><Trash2 size={14} /></button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
 
       <AnimatePresence>
         {showForm && (
@@ -656,20 +477,7 @@ export default function AdminPage() {
                         const file = e.target.files?.[0];
                         if (file) {
                           const reader = new FileReader();
-                          reader.onload = ev => {
-                            const img = new Image();
-                            img.onload = () => {
-                              const maxW = 800;
-                              const scale = Math.min(1, maxW / img.width);
-                              const c = document.createElement('canvas');
-                              c.width = img.width * scale;
-                              c.height = img.height * scale;
-                              const ctx = c.getContext('2d')!;
-                              ctx.drawImage(img, 0, 0, c.width, c.height);
-                              setForm(f => ({ ...f, image: c.toDataURL('image/jpeg', 0.7) }));
-                            };
-                            img.src = ev.target?.result as string;
-                          };
+                          reader.onload = ev => setForm(f => ({ ...f, image: ev.target?.result as string || '' }));
                           reader.readAsDataURL(file);
                         }
                       }}

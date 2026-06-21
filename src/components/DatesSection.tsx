@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar } from 'lucide-react';
-import { getProducts, onSync } from '@/lib/products';
+import { getProducts } from '@/lib/products';
 import ProductCard from './ProductCard';
 import ProductModal from './ProductModal';
 import type { Product } from '@/lib/products';
@@ -21,11 +21,11 @@ const dateCategories = [
 ];
 
 export default function DatesSection() {
-  const [products, setProducts] = useState<Product[]>(() => getProducts().filter(p => p.category === 'datas'));
+  const [products, setProducts] = useState<Product[]>([]);
   const [activeDate, setActiveDate] = useState('dia-das-maes');
   const [modal, setModal] = useState<Product | null>(null);
 
-  useEffect(() => onSync(() => setProducts(getProducts().filter(p => p.category === 'datas'))), []);
+  useEffect(() => { setProducts(getProducts().filter(p => p.category === 'datas')) }, []);
 
   const filtered = products.filter(p => p.subcategory === activeDate);
 
@@ -82,7 +82,7 @@ export default function DatesSection() {
           transition={{ duration: 0.3 }}
         >
           {filtered.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filtered.map((p, i) => (
                 <ProductCard key={p.id} product={p} index={i} onView={setModal} />
               ))}
