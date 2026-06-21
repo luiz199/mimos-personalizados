@@ -1,10 +1,11 @@
 'use client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ShoppingCart, Share2, ImageIcon } from 'lucide-react';
+import { X, ShoppingCart, ShoppingBag, Share2, ImageIcon } from 'lucide-react';
 import type { Product } from '@/lib/products';
 import { openWhatsapp } from '@/lib/whatsapp';
 import { generatePlaceholder } from '@/lib/placeholders';
 import ShareButtons from './ShareButtons';
+import { useCart } from '@/lib/cart';
 
 interface Props {
   product: Product | null;
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export default function ProductModal({ product, onClose }: Props) {
+  const { add } = useCart();
   if (!product) return null;
 
   const imgSrc = product.image || generatePlaceholder(product.name, product.subcategory);
@@ -61,7 +63,12 @@ export default function ProductModal({ product, onClose }: Props) {
                 )}
                 <span className="text-2xl font-light text-[#111]">R$ {product.price.toFixed(2).replace('.', ',')}</span>
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-2">
+                <button onClick={() => add(product)}
+                  className="flex-1 btn-secondary justify-center py-3 text-sm"
+                >
+                  <ShoppingBag size={16} /> Carrinho
+                </button>
                 <button onClick={() => openWhatsapp(product.name, product.price, product.image)}
                   className="flex-1 btn-primary justify-center py-3 text-sm"
                 >

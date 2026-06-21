@@ -87,37 +87,84 @@ const DEFAULT_PRODUCTS: Product[] = [
   },
 ];
 
+// Try to read from localStorage once at module load (client only)
+let cached: Product[] | null = null;
+try {
+  if (typeof window !== 'undefined') {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as Product[];
+      if (Array.isArray(parsed) && parsed.length) {
+        cached = parsed;
+      }
+    }
+  }
+} catch {}
+
 export function getProducts(): Product[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const data = localStorage.getItem(STORAGE_KEY);
-    if (data) return JSON.parse(data);
-  } catch {}
-  setProducts(DEFAULT_PRODUCTS);
+  if (cached) return cached;
   return DEFAULT_PRODUCTS;
 }
 
 export function setProducts(products: Product[]) {
+  cached = products;
   if (typeof window === 'undefined') return;
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(products)) } catch {}
 }
 
+// Ensure defaults are written on first client-side call
+export function ensureDefaults() {
+  if (cached) return;
+  const all = getProducts();
+  if (all.length) {
+    cached = all;
+    if (typeof window !== 'undefined') {
+      try {
+        if (!localStorage.getItem(STORAGE_KEY)) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+        }
+      } catch {}
+    }
+  }
+}
+
 export function addProduct(product: Omit<Product, 'id' | 'createdAt'>): Product {
   const p: Product = { ...product, id: Date.now().toString(), createdAt: Date.now() };
-  const all = getProducts();
+  const all = [...getProducts()];
   all.push(p);
   setProducts(all);
   return p;
 }
 
 export function updateProduct(id: string, updates: Partial<Product>) {
-  const all = getProducts();
+  const all = [...getProducts()];
   const idx = all.findIndex(p => p.id === id);
   if (idx >= 0) { all[idx] = { ...all[idx], ...updates }; setProducts(all); }
 }
 
 export function deleteProduct(id: string) {
   setProducts(getProducts().filter(p => p.id !== id));
+}
+
+const SYNC_EVENT = 'mimos-synced';
+
+export async function syncFromApi() {
+  if (typeof window === 'undefined') return;
+  try {
+    const res = await fetch('/api/products');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (Array.isArray(data) && data.length) {
+      setProducts(data as Product[]);
+    }
+    window.dispatchEvent(new Event(SYNC_EVENT));
+  } catch {}
+}
+
+export function onSync(cb: () => void) {
+  if (typeof window === 'undefined') return () => {};
+  window.addEventListener(SYNC_EVENT, cb);
+  return () => window.removeEventListener(SYNC_EVENT, cb);
 }
 
 export function getCategories(): string[] {

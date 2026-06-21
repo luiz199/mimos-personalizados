@@ -1,11 +1,20 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Tag } from 'lucide-react';
-import { getProducts } from '@/lib/products';
+import { Tag, Sparkles, Gift } from 'lucide-react';
 import ProductCard from './ProductCard';
 import ProductModal from './ProductModal';
 import type { Product } from '@/lib/products';
+
+const defaultOffers: Product[] = [
+  { id: '1', name: 'Caneca Floral Delicada', description: 'Caneca de porcelana 300ml adornada com estampa floral em tons pastéis.', price: 49.90, oldPrice: 69.90, image: '', category: 'mimos', subcategory: 'canecas', isOffer: true, createdAt: Date.now() },
+  { id: '2', name: 'Caderneta Artesanal com Caneta', description: 'Caderneta revestida em tecido com nome bordado, acompanhada de caneta exclusiva.', price: 39.90, oldPrice: 55.00, image: '', category: 'mimos', subcategory: 'cadernetas', isOffer: true, createdAt: Date.now() },
+  { id: '6', name: 'Agenda dos Sonhos 2026', description: 'Agenda anual com capa dura revestida em tecido aveludado, nome personalizado e páginas com design floral exclusivo.', price: 59.90, oldPrice: 79.90, image: '', category: 'mimos', subcategory: 'agendas', isOffer: true, createdAt: Date.now() },
+  { id: '8', name: 'Caneka Amor Eterno - Dia das Mães', description: 'Caneka especial em porcelana com frase "Melhor Mãe do Mundo" em lettering dourado.', price: 54.90, oldPrice: 69.90, image: '', category: 'datas', subcategory: 'dia-das-maes', isOffer: true, createdAt: Date.now() },
+  { id: '10', name: 'Ovo de Páscoa Dos Sonhos 500g', description: 'Ovo de chocolate belga ao leite 500g com embalagem luxuosa personalizada.', price: 89.90, oldPrice: 119.90, image: '', category: 'datas', subcategory: 'pascoa', isOffer: true, createdAt: Date.now() },
+  { id: '13', name: 'Super Combo Mimos Exclusivos', description: 'Pacote especial com 3 produtos personalizados: caneca + caderneta + caneta com 20% de desconto.', price: 89.90, oldPrice: 119.70, image: '', category: 'ofertas', subcategory: 'kits-promocionais', isOffer: true, createdAt: Date.now() },
+  { id: '14', name: 'Mini Caneca Surpresa', description: 'Caneca 200ml sortida com estampas exclusivas por apenas R$19,90. Estoque limitado!', price: 19.90, oldPrice: 39.90, image: '', category: 'ofertas', subcategory: 'queima-estoque', isOffer: true, createdAt: Date.now() },
+];
 
 function Countdown() {
   const end = Date.now() + 7 * 24 * 60 * 60 * 1000;
@@ -59,10 +68,15 @@ function Countdown() {
 }
 
 export default function OffersSection() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>(defaultOffers);
   const [modal, setModal] = useState<Product | null>(null);
 
-  useEffect(() => { setProducts(getProducts().filter(p => p.isOffer)) }, []);
+  useEffect(() => {
+    import('@/lib/products').then(({ getProducts }) => {
+      const p = getProducts().filter((x: Product) => x.isOffer);
+      if (p.length) setProducts(p);
+    });
+  }, []);
 
   if (!products.length) return null;
 
@@ -89,7 +103,7 @@ export default function OffersSection() {
 
         <Countdown />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
           {products.map((p, i) => (
             <ProductCard key={p.id} product={p} index={i} showOffer onView={setModal} />
           ))}

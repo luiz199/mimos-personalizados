@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar } from 'lucide-react';
-import { getProducts } from '@/lib/products';
+import { getProducts, onSync } from '@/lib/products';
 import ProductCard from './ProductCard';
 import ProductModal from './ProductModal';
 import type { Product } from '@/lib/products';
@@ -26,6 +26,7 @@ export default function DatesSection() {
   const [modal, setModal] = useState<Product | null>(null);
 
   useEffect(() => { setProducts(getProducts().filter(p => p.category === 'datas')) }, []);
+  useEffect(() => onSync(() => setProducts(getProducts().filter(p => p.category === 'datas'))), []);
 
   const filtered = products.filter(p => p.subcategory === activeDate);
 

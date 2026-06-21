@@ -33,3 +33,15 @@ const ProductSchema = new mongoose.Schema({
 }, { timestamps: false });
 
 export const ProductModel = mongoose.models.Product || mongoose.model('Product', ProductSchema);
+
+const CouponSchema = new mongoose.Schema({
+  code: String,
+  discount: Number,
+  active: Boolean,
+  expiresAt: Number,
+  usesLeft: Number,
+  minValue: Number,
+  createdAt: Number,
+}, { timestamps: false });
+
+export const CouponModel = mongoose.models.Coupon || mongoose.model('Coupon', CouponSchema);

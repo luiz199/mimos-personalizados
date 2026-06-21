@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import TreeSection from '@/components/TreeSection';
 import Header from '@/components/Header';
 import OffersSection from '@/components/OffersSection';
@@ -15,18 +15,15 @@ import ContactSection from '@/components/ContactSection';
 import Footer from '@/components/Footer';
 import BackToTop from '@/components/BackToTop';
 import LoadingScreen from '@/components/LoadingScreen';
-import FlashOffer from '@/components/FlashOffer';
-import SocialProof from '@/components/SocialProof';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import VisitorCounter from '@/components/VisitorCounter';
+import { syncFromApi } from '@/lib/products';
 
 export default function Home() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true) }, []);
-
-  if (!mounted) return null;
+  useEffect(() => { syncFromApi() }, []);
 
   return (
-    <>
+    <ErrorBoundary>
       <LoadingScreen />
       <Header />
       <main>
@@ -44,9 +41,7 @@ export default function Home() {
       </main>
       <Footer />
       <BackToTop />
-      <FlashOffer />
-      <SocialProof />
       <VisitorCounter />
-    </>
+    </ErrorBoundary>
   );
 }

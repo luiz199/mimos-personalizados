@@ -1,8 +1,7 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Gift, Search, X } from 'lucide-react';
-import { getProducts } from '@/lib/products';
 import ProductCard from './ProductCard';
 import ProductModal from './ProductModal';
 import type { Product } from '@/lib/products';
@@ -18,22 +17,37 @@ const subcategories = [
   { id: 'kits', label: 'Kits' },
 ];
 
+const defaultMimos: Product[] = [
+  { id: '1', name: 'Caneca Floral Delicada', description: 'Caneca de porcelana 300ml adornada com estampa floral em tons pastéis. Perfeita para presentear com elegância. Resistente ao micro-ondas.', price: 49.90, oldPrice: 69.90, image: '', category: 'mimos', subcategory: 'canecas', isOffer: true, createdAt: Date.now() },
+  { id: '2', name: 'Caderneta Artesanal com Caneta', description: 'Caderneta revestida em tecido com nome bordado, acompanhada de caneta exclusiva. Ideal para registrar momentos especiais.', price: 39.90, oldPrice: 55.00, image: '', category: 'mimos', subcategory: 'cadernetas', isOffer: true, createdAt: Date.now() },
+  { id: '3', name: 'Lembranças de Casamento Premium', description: 'Conjunto de 50 lembrancinhas personalizadas com embalagem individual em organza. Elegância e sofisticação para seu grande dia.', price: 189.90, image: '', category: 'mimos', subcategory: 'lembrancinhas', createdAt: Date.now() },
+  { id: '4', name: 'Baú de Memórias Personalizado', description: 'Caixa em MDF revestida com nome e data gravados a laser. Acompanha mimos internos selecionados. Dimensões 25x15x8cm.', price: 79.90, image: '', category: 'mimos', subcategory: 'caixas', createdAt: Date.now() },
+  { id: '5', name: 'Topo de Bolo Sonho de Amor', description: 'Topo de bolo em acrílico cristal com nomes dos noivos e data. Disponível nas cores rosa, azul celeste e dourado.', price: 34.90, image: '', category: 'mimos', subcategory: 'topos-bolo', createdAt: Date.now() },
+  { id: '6', name: 'Agenda dos Sonhos 2026', description: 'Agenda anual com capa dura revestida em tecido aveludado, nome personalizado e páginas com design floral exclusivo.', price: 59.90, oldPrice: 79.90, image: '', category: 'mimos', subcategory: 'agendas', isOffer: true, createdAt: Date.now() },
+  { id: '7', name: 'Kit Universitário Encanto', description: 'Conjunto completo para formatura: caneca porcelana, caderneta, caneta e chaveiro personalizados com seu nome.', price: 99.90, image: '', category: 'mimos', subcategory: 'kits', createdAt: Date.now() },
+];
+
 export default function MimosSection() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>(defaultMimos);
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [modal, setModal] = useState<Product | null>(null);
 
-  useEffect(() => { setProducts(getProducts().filter(p => p.category === 'mimos')) }, []);
+  useEffect(() => {
+    import('@/lib/products').then(({ getProducts }) => {
+      const p = getProducts().filter((x: Product) => x.category === 'mimos');
+      if (p.length) setProducts(p);
+    });
+  }, []);
 
-  const filtered = products.filter(p => {
+  const filtered = useMemo(() => products.filter(p => {
     if (filter !== 'all' && p.subcategory !== filter) return false;
     if (search) {
       const q = search.toLowerCase();
       if (!p.name.toLowerCase().includes(q) && !p.description.toLowerCase().includes(q)) return false;
     }
     return true;
-  });
+  }), [products, filter, search]);
 
   return (
     <section id="mimos" className="relative py-20 md:py-28 px-4">
@@ -93,7 +107,7 @@ export default function MimosSection() {
           ))}
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
           {filtered.map((p, i) => (
             <ProductCard key={p.id} product={p} index={i} onView={setModal} />
           ))}

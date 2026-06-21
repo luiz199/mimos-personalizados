@@ -1,9 +1,10 @@
 'use client';
 import { motion } from 'framer-motion';
-import { ShoppingCart, Sparkles } from 'lucide-react';
+import { ShoppingCart, ShoppingBag, Sparkles } from 'lucide-react';
 import type { Product } from '@/lib/products';
 import { openWhatsapp } from '@/lib/whatsapp';
-import { generatePlaceholder } from '@/lib/placeholders';
+import { getPlaceholderColors } from '@/lib/placeholders';
+import { useCart } from '@/lib/cart';
 
 interface Props {
   product: Product;
@@ -23,7 +24,13 @@ const categoryLabels: Record<string, string> = {
 
 export default function ProductCard({ product, index = 0, showOffer, onView }: Props) {
   const p = product;
-  const imgSrc = p.image || generatePlaceholder(p.name, p.subcategory);
+  const { add } = useCart();
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const isFullUrl = p.image && (p.image.startsWith('http') || p.image.startsWith('data:image/jpeg') || p.image.startsWith('data:image/png'));
+  const imgUrl = p.image ? (isFullUrl ? p.image : `${origin}${p.image}`) : '';
+  const [c1, c2, c3] = getPlaceholderColors(p.subcategory);
+  const initial = p.name.charAt(0).toUpperCase();
+  const hasRealImage = !!p.image && isFullUrl;
 
   return (
     <motion.div
@@ -42,8 +49,21 @@ export default function ProductCard({ product, index = 0, showOffer, onView }: P
         </div>
       )}
       <div className="relative h-48 sm:h-56 flex items-center justify-center overflow-hidden">
-        <img src={imgSrc} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-        <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        {hasRealImage ? (
+          <img src={imgUrl} alt={p.name}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+          />
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center transition-transform duration-700 group-hover:scale-110"
+            style={{ background: `linear-gradient(135deg, ${c1}, ${c2}, ${c3})` }}
+          >
+            <span className="text-6xl sm:text-7xl font-light text-white/70 select-none">{initial}</span>
+            <span className="text-xs text-white/50 mt-2 px-4 text-center select-none">
+              {p.name.length > 25 ? p.name.slice(0, 22) + '...' : p.name}
+            </span>
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
       </div>
       <div className="p-4 sm:p-5 flex flex-col flex-1">
         {p.subcategory && (
@@ -63,12 +83,20 @@ export default function ProductCard({ product, index = 0, showOffer, onView }: P
           {p.oldPrice && <span className="product-old-price">R$ {p.oldPrice.toFixed(2).replace('.', ',')}</span>}
           <span className="text-base sm:text-lg font-light text-[#111]">R$ {p.price.toFixed(2).replace('.', ',')}</span>
         </div>
-        <button onClick={e => { e.stopPropagation(); openWhatsapp(p.name, p.price, p.image); }}
-          className="w-full btn-primary justify-center text-sm py-3"
-        >
-          <ShoppingCart size={16} />
-          Comprar
-        </button>
+        <div className="flex gap-2">
+          <button onClick={e => { e.stopPropagation(); add(p) }}
+            className="flex-1 btn-secondary justify-center text-sm py-2.5"
+          >
+            <ShoppingBag size={15} />
+            Carrinho
+          </button>
+          <button onClick={e => { e.stopPropagation(); openWhatsapp(p.name, p.price, imgUrl); }}
+            className="flex-1 btn-primary justify-center text-sm py-2.5"
+          >
+            <ShoppingCart size={15} />
+            Comprar
+          </button>
+        </div>
       </div>
     </motion.div>
   );
