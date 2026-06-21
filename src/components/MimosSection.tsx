@@ -18,13 +18,13 @@ const subcategories = [
 ];
 
 const defaultMimos: Product[] = [
-  { id: '1', name: 'Caneca Floral Delicada', description: 'Caneca de porcelana 300ml adornada com estampa floral em tons pastéis. Perfeita para presentear com elegância. Resistente ao micro-ondas.', price: 49.90, oldPrice: 69.90, image: '', category: 'mimos', subcategory: 'canecas', isOffer: true, createdAt: Date.now() },
-  { id: '2', name: 'Caderneta Artesanal com Caneta', description: 'Caderneta revestida em tecido com nome bordado, acompanhada de caneta exclusiva. Ideal para registrar momentos especiais.', price: 39.90, oldPrice: 55.00, image: '', category: 'mimos', subcategory: 'cadernetas', isOffer: true, createdAt: Date.now() },
-  { id: '3', name: 'Lembranças de Casamento Premium', description: 'Conjunto de 50 lembrancinhas personalizadas com embalagem individual em organza. Elegância e sofisticação para seu grande dia.', price: 189.90, image: '', category: 'mimos', subcategory: 'lembrancinhas', createdAt: Date.now() },
-  { id: '4', name: 'Baú de Memórias Personalizado', description: 'Caixa em MDF revestida com nome e data gravados a laser. Acompanha mimos internos selecionados. Dimensões 25x15x8cm.', price: 79.90, image: '', category: 'mimos', subcategory: 'caixas', createdAt: Date.now() },
-  { id: '5', name: 'Topo de Bolo Sonho de Amor', description: 'Topo de bolo em acrílico cristal com nomes dos noivos e data. Disponível nas cores rosa, azul celeste e dourado.', price: 34.90, image: '', category: 'mimos', subcategory: 'topos-bolo', createdAt: Date.now() },
-  { id: '6', name: 'Agenda dos Sonhos 2026', description: 'Agenda anual com capa dura revestida em tecido aveludado, nome personalizado e páginas com design floral exclusivo.', price: 59.90, oldPrice: 79.90, image: '', category: 'mimos', subcategory: 'agendas', isOffer: true, createdAt: Date.now() },
-  { id: '7', name: 'Kit Universitário Encanto', description: 'Conjunto completo para formatura: caneca porcelana, caderneta, caneta e chaveiro personalizados com seu nome.', price: 99.90, image: '', category: 'mimos', subcategory: 'kits', createdAt: Date.now() },
+  { id: '1', name: 'Caneca Floral Delicada', description: 'Caneca de porcelana 300ml adornada com estampa floral em tons pastéis.', price: 49.90, oldPrice: 69.90, image: '', category: 'mimos', subcategory: 'canecas', isOffer: true, createdAt: 1 },
+  { id: '2', name: 'Caderneta Artesanal com Caneta', description: 'Caderneta revestida em tecido com nome bordado, acompanhada de caneta exclusiva.', price: 39.90, oldPrice: 55.00, image: '', category: 'mimos', subcategory: 'cadernetas', isOffer: true, createdAt: 2 },
+  { id: '3', name: 'Lembranças de Casamento Premium', description: 'Conjunto de 50 lembrancinhas personalizadas.', price: 189.90, image: '', category: 'mimos', subcategory: 'lembrancinhas', createdAt: 3 },
+  { id: '4', name: 'Baú de Memórias Personalizado', description: 'Caixa em MDF revestida com nome e data gravados a laser.', price: 79.90, image: '', category: 'mimos', subcategory: 'caixas', createdAt: 4 },
+  { id: '5', name: 'Topo de Bolo Sonho de Amor', description: 'Topo de bolo em acrílico cristal com nomes dos noivos.', price: 34.90, image: '', category: 'mimos', subcategory: 'topos-bolo', createdAt: 5 },
+  { id: '6', name: 'Agenda dos Sonhos 2026', description: 'Agenda anual com capa dura revestida em tecido aveludado.', price: 59.90, oldPrice: 79.90, image: '', category: 'mimos', subcategory: 'agendas', isOffer: true, createdAt: 6 },
+  { id: '7', name: 'Kit Universitário Encanto', description: 'Conjunto completo para formatura.', price: 99.90, image: '', category: 'mimos', subcategory: 'kits', createdAt: 7 },
 ];
 
 export default function MimosSection() {
@@ -32,7 +32,9 @@ export default function MimosSection() {
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [modal, setModal] = useState<Product | null>(null);
+  const [mounted, setMounted] = useState(false);
 
+  useEffect(() => { setMounted(true) }, []);
   useEffect(() => {
     import('@/lib/products').then(({ getProducts }) => {
       const p = getProducts().filter((x: Product) => x.category === 'mimos');
@@ -119,6 +121,10 @@ export default function MimosSection() {
             <p className="text-sm text-text-secondary/60">Nenhum produto encontrado</p>
           </div>
         )}
+
+        <div className="text-center text-[10px] text-gray-400 mt-2">
+          Produtos carregados: {products.length} | Filtrados: {filtered.length} | Mounted: {mounted ? 'sim' : 'nao'}
+        </div>
       </div>
       <ProductModal product={modal} onClose={() => setModal(null)} />
     </section>
